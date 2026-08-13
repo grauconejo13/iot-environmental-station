@@ -1,25 +1,25 @@
 # IoT Environmental Station
 
-A local-first environmental monitoring station built around the Libre Computer AML-S905X-CC (Le Potato). The project will collect real sensor readings at the edge, persist them locally, expose them through an API, and visualize trends in a web dashboard.
+A small ESP32-based environmental monitoring station that collects real sensor readings, sends them over Wi-Fi, stores them through a lightweight API, and visualizes trends in a web dashboard.
 
 ## Project goals
 
-- Read real environmental data from sensors connected to a Le Potato.
-- Keep the station functional without cloud connectivity.
-- Store time-series measurements locally.
-- Expose sensor data through a small API.
-- Build a clean web dashboard for current conditions and historical trends.
-- Document wiring, Linux setup, architecture, and hardware decisions publicly.
+- Read temperature, humidity, pressure, and ambient light from physical sensors.
+- Use an ESP32 as the edge sensor node.
+- Send normalized readings over Wi-Fi to a small API.
+- Store time-series measurements locally first.
+- Build a clean dashboard for current conditions and historical trends.
+- Keep the hardware and software modular so additional sensor nodes can be added later.
 
 ## Planned v1 hardware
 
-- Libre Computer AML-S905X-CC (Le Potato)
+- ESP-WROOM-32 / ESP32 development board
 - BME280 temperature / humidity / pressure sensor
 - BH1750 ambient light sensor
 - Breadboard and jumper wires
-- microSD card and stable power supply
+- Micro-USB cable and 5V USB power source
 
-Air-quality sensing will be added after the first sensor pipeline is proven.
+A small OLED display is planned as a later upgrade. Air-quality sensing will be added after the first sensor pipeline is proven.
 
 ## Architecture
 
@@ -27,29 +27,28 @@ Air-quality sensing will be added after the first sensor pipeline is proven.
 BME280 + BH1750
        |
        v
-   Le Potato
+     ESP32
+       |
+     Wi-Fi
        |
        v
-Python sensor collector
+   FastAPI API
        |
        v
-Local database
-       |
-       v
-      API
+     SQLite
        |
        v
 React dashboard
 ```
 
-The first version is intentionally local-first. Cloud synchronization can be added later without becoming a dependency for basic station operation.
+During development, a mock sender stands in for the ESP32 so the API and persistence layer can be built before the hardware arrives.
 
 ## Repository layout
 
 ```text
 iot-environmental-station/
-├── collector/      # Sensor acquisition and normalization
-├── server/         # API and persistence layer
+├── firmware/       # ESP32 firmware (added during hardware bring-up)
+├── server/         # API, persistence, and mock sensor sender
 ├── dashboard/      # Web dashboard
 ├── hardware/       # Wiring, pinout, photos, BOM
 ├── docs/           # Architecture and setup notes
@@ -58,31 +57,31 @@ iot-environmental-station/
 
 ## Milestones
 
-### M1 — First real sensor reading
+### M1 — Mock telemetry pipeline
 
-Le Potato boots, I2C is enabled, the BME280 is detected, and a Python script prints a real temperature/humidity/pressure reading.
+Run the local API, send simulated environmental readings, and persist them to SQLite.
 
-### M2 — Sensor collector
+### M2 — First real sensor reading
 
-Create a modular collector that reads BME280 and BH1750 measurements and normalizes them into timestamped records.
+Connect the BME280 and BH1750 to the ESP32 and verify real readings over serial.
 
-### M3 — Local persistence + API
+### M3 — ESP32 Wi-Fi telemetry
 
-Persist readings locally and expose current and historical measurements through an API.
+Send real sensor readings from the ESP32 to the API over Wi-Fi.
 
 ### M4 — Dashboard
 
 Build a responsive dashboard showing station status, current readings, 24-hour trends, minima/maxima, and sensor health.
 
-### M5 — Air quality
+### M5 — Physical display and air quality
 
-Add one or more dedicated CO2, VOC, or particulate sensors after the core station is stable.
+Add the OLED display and later one or more dedicated CO2, VOC, or particulate sensors.
 
 ## Status
 
-**Current:** project foundation / hardware bring-up.
+**Current:** software pipeline development while hardware is in transit.
 
-Next engineering checkpoint: obtain the first verified BME280 reading from the Le Potato.
+Next engineering checkpoint: run the mock sender against the API and confirm readings are persisted in SQLite.
 
 ## License
 
